@@ -1,0 +1,125 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "width": 1200,
+    "height": 800,
+    "title": {
+        "text":"Droughts and Floods between 1960 to 2018",
+    "fontSize":30},
+    "params": [
+        {
+            "name": "yearSelection",
+            "value": 2000,
+            "bind": {
+                "input": "range",
+                "min": 1960,
+                "max": 2018,
+                "step": 1
+            }
+        }
+    ],
+    "projection": {
+        "type": "equalEarth"
+    },
+    "layer": [
+        {
+            "data": {
+                "url": "https://raw.githubusercontent.com/KaneSec/vega_lite/main/2_symbol_map/js/ne_110m_admin_0_countries.topojson",
+                "format": {
+                    "type": "topojson",
+                    "feature": "ne_110m_admin_0_countries"
+                }
+            },
+            
+            "mark": {
+                "type": "geoshape",
+                "fill": "lightgray",
+                "stroke": "white"
+            }
+        },
+        {
+            "data": {
+                "url": "data/pend-gdis-1960-2018-disasterlocations.csv"
+            },
+            "transform": [
+                {
+                    "filter": "datum.year == yearSelection"
+                },
+                {
+                    "filter": "datum.disastertype == 'drought' || datum.disastertype == 'flood'"
+                }
+            ],
+            "selection": {
+                  "disaster_highlight": {
+                    "type": "multi",
+                    "fields": ["disastertype"],
+                    "bind": "legend"
+                  }
+                },
+            "mark": {
+                "type": "circle"
+            },
+            "encoding": {
+                "longitude": {
+                    "field": "longitude",
+                    "type": "quantitative"
+                },
+                "latitude": {
+                    "field": "latitude",
+                    "type": "quantitative"
+                },
+                "size": {
+                    "field": "level",
+                    "type": "ordinal",
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            1,
+                            2,
+                            3
+                        ],
+                        "range": [
+                            50,
+                            100,
+                            200
+                        ]
+                    },
+                    "legend": {
+                        "title": "Damage Level",
+                        "titleFontSize": 20,
+                        "labelFontSize": 15
+                    }
+                },
+                "color": {
+                    "field": "disastertype",
+                    "type": "nominal",
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            "drought",
+                            "flood"
+                        ],
+                        "range": [
+                            "#E1BB8A",
+                            "#6fa8dc"
+                        ]
+                    },
+                    "legend": {
+                        "title": "Disaster Type",
+                        "titleFontSize": 20,
+                        "labelExpr": "{'drought': 'Drought', 'flood': 'Flood'}[datum.label]",
+                        "labelFontSize": 15
+                    }
+                },
+                "opacity": {
+                    "condition": {"selection": "disaster_highlight", "value": 0.6},
+                    "value": 0.0
+                },
+                "tooltip": [
+                    {"field": "country", "type":"nominal", "title":"Country", "fontSize": 30},
+                    {"field": "disastertype", "type": "nominal", "title": "Disaster Type"},
+                    {"field": "level", "type": "ordinal", "title": "Damage Level"}
+                ]
+            }
+        }
+    ]
+}
